@@ -176,18 +176,18 @@ for (let i = 0; i < 30; i++) {
 }
 
 // Send Telegram message
-function sendMessage(text) {
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+function sendOption(date) {
+    const text = `Тэр надтай ${date}-нд уулзахаар болсон! 🎉`;
+    fetch("https://script.google.com/macros/s/AKfycbxky01L1VUD2b_W-UkMYN2799e8X3dL0YtCkvHCgQckRnQRFI4KitXAHim9y0cD9IMm1g/exec", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-            chat_id: CHAT_ID,
-            text: text
-        })
+        body: JSON.stringify({ text })
     });
+    alert("Баярлалаа! 💖");
 }
+
 
 // When user clicks a date option
 function sendOption(date) {
@@ -198,3 +198,4 @@ function sendOption(date) {
 
 </body>
 </html>
+
