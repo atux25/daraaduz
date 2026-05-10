@@ -36,6 +36,10 @@
     #yesBtn {
         background-color: #ff4d6d;
         color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    #yesBtn:hover {
+        background-color: #ff2a55;
     }
     #noBtn {
         background-color: #cccccc;
@@ -78,17 +82,31 @@
         100% { transform: translateY(-10vh) scale(1.5); }
     }
     
-    /* New Sliding Cat Styles */
+    /* Smooth Sliding Cat Animation Styles */
     #treatCatContainer {
         position: fixed;
-        bottom: 25%;
-        right: -600px; /* Starts off-screen to the right */
-        transition: right 2s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth sliding animation */
+        bottom: 20%;
+        left: 50%;
+        transform: translateX(100vw); /* Start fully off-screen right */
         z-index: 10;
         display: none; 
         flex-direction: column;
         align-items: center;
+        will-change: transform;
     }
+
+    /* Spring-like slide-in animation */
+    @keyframes slideInWithBounce {
+        0%   { transform: translateX(100vw); }
+        60%  { transform: translateX(-55%); } /* Overshoot left */
+        80%  { transform: translateX(-48%); } /* Rebound right */
+        100% { transform: translateX(-50%); } /* Settle exactly in middle */
+    }
+
+    .slide-in-active {
+        animation: slideInWithBounce 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+
     .speech-bubble {
         background-color: white;
         border-radius: 20px;
@@ -98,9 +116,11 @@
         font-size: 1.5em;
         color: #ff4d6d;
         position: relative;
-        opacity: 0; /* Hidden initially */
-        transition: opacity 0.8s ease-in 2s; /* Fades in 2 seconds AFTER the slide starts */
+        opacity: 0;
+        transform: scale(0.5);
+        transform-origin: bottom center;
     }
+
     .speech-bubble::after {
         content: '';
         position: absolute;
@@ -111,10 +131,35 @@
         border-color: white transparent transparent transparent;
         transform: translateX(-50%);
     }
+
+    /* Pop-up bubble animation */
+    @keyframes popBubble {
+        0%   { opacity: 0; transform: scale(0.5); }
+        70%  { opacity: 1; transform: scale(1.1); } /* Slight pop */
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    .bubble-active {
+        animation: popBubble 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        animation-delay: 1.2s; /* Waits until cat finishes sliding */
+    }
+
     .cat-treats {
         display: flex;
-        align-items: flex-end;
-        gap: 15px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .treats {
+        font-size: 55px;
+        /* Adds a nice hover floating effect to the food */
+        animation: floatTreats 2s ease-in-out infinite alternate; 
+    }
+
+    @keyframes floatTreats {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-8px); }
     }
 </style>
 </head>
@@ -131,7 +176,7 @@
     <div class="speech-bubble">ulsuj bainu eniig iderei</div>
     <div class="cat-treats">
         <img src="https://media.tenor.com/kHbZ8I_DY50AAAAi/yippee-cat.gif" alt="Yippee Cat" width="150">
-        <span style="font-size: 60px;">🎂☕</span>
+        <span class="treats">🎂☕</span>
     </div>
 </div>
 
@@ -160,9 +205,13 @@ noBtn.addEventListener("mouseover", moveNoButton);
 
 // Yes button logic
 yesBtn.addEventListener("click", () => {
-    // 1. Hide buttons and change title
+    // 1. Hide buttons and change title smoothly
     buttonContainer.style.display = "none";
-    mainTitle.innerText = "Баярлалаа! ❤️";
+    mainTitle.style.opacity = 0;
+    setTimeout(() => {
+        mainTitle.innerText = "Баярлалаа! ❤️";
+        mainTitle.style.opacity = 1;
+    }, 300);
 
     // 2. Trigger Confetti and Balloons
     for (let i = 0; i < 15; i++) {
@@ -185,15 +234,14 @@ yesBtn.addEventListener("click", () => {
         setTimeout(() => confetti.remove(), 3000);
     }
 
-    // 3. Show and animate the cat sliding from the right
+    // 3. Trigger the high-quality cat slide and speech bubble
     treatCatContainer.style.display = "flex";
     
-    // A tiny delay is needed so the browser registers the display:flex before animating the slide
-    setTimeout(() => {
-        treatCatContainer.style.right = "50%";
-        treatCatContainer.style.transform = "translateX(50%)"; // Keeps it perfectly centered
-        speechBubble.style.opacity = "1"; // Triggers the fade-in for the text
-    }, 50);
+    // Add animation classes after a microscopic delay to ensure CSS registers the DOM update
+    requestAnimationFrame(() => {
+        treatCatContainer.classList.add("slide-in-active");
+        speechBubble.classList.add("bubble-active");
+    });
 
     // 4. Send message to Google Script
     sendToGoogleScript("Тийм ээ гэж хариулсан! Болзоонд явахаар боллоо! ❤️🎂☕");
