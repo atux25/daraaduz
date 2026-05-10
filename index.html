@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Урилга</title>
 <style>
+    * { box-sizing: border-box; }
     body {
         margin: 0;
         height: 100vh;
@@ -31,20 +32,17 @@
         border-radius: 8px;
         cursor: pointer;
         margin: 10px;
-        transition: background-color 0.3s;
     }
     #yesBtn {
         background-color: #ff4d6d;
         color: white;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    #yesBtn:hover {
-        background-color: #ff2a55;
-    }
+    #yesBtn:hover { background-color: #ff2a55; }
     #noBtn {
         background-color: #cccccc;
         color: black;
-        position: absolute;
+        position: fixed;
     }
     .balloon {
         position: absolute;
@@ -54,111 +52,96 @@
         z-index: 1;
     }
     @keyframes float {
-        0% { transform: translateY(0); opacity: 1; }
+        0%   { transform: translateY(0); opacity: 1; }
         100% { transform: translateY(-110vh); opacity: 0; }
     }
     .confetti {
         position: absolute;
         width: 8px;
         height: 8px;
-        background-color: red;
         animation: fall 3s linear forwards;
         z-index: 1;
     }
     @keyframes fall {
-        0% { transform: translateY(0) rotate(0); opacity: 1; }
+        0%   { transform: translateY(0) rotate(0); opacity: 1; }
         100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
     }
     .heart {
         position: absolute;
         color: #ff4d6d;
-        font-size: 20px;
         animation: heartFloat 8s linear infinite;
-        opacity: 0.6;
+        opacity: 0.5;
         z-index: 0;
+        pointer-events: none;
     }
     @keyframes heartFloat {
-        0% { transform: translateY(100vh) scale(1); }
+        0%   { transform: translateY(100vh) scale(1); }
         100% { transform: translateY(-10vh) scale(1.5); }
     }
-    
-    /* Smooth Sliding Cat Animation Styles */
-    #treatCatContainer {
+
+    /* Cat popup */
+    #catContainer {
         position: fixed;
-        bottom: 20%;
+        bottom: 10%;
         left: 50%;
-        transform: translateX(100vw); /* Start fully off-screen right */
-        z-index: 10;
-        display: none; 
+        transform: translateX(-50%) translateY(300px);
+        opacity: 0;
+        transition: transform 0.9s cubic-bezier(0.34, 1.4, 0.64, 1),
+                    opacity 0.5s ease;
+        z-index: 100;
+        display: flex;
         flex-direction: column;
         align-items: center;
-        will-change: transform;
     }
-
-    /* Spring-like slide-in animation */
-    @keyframes slideInWithBounce {
-        0%   { transform: translateX(100vw); }
-        60%  { transform: translateX(-55%); } /* Overshoot left */
-        80%  { transform: translateX(-48%); } /* Rebound right */
-        100% { transform: translateX(-50%); } /* Settle exactly in middle */
+    #catContainer.visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
     }
-
-    .slide-in-active {
-        animation: slideInWithBounce 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    }
-
     .speech-bubble {
-        background-color: white;
+        background: white;
         border-radius: 20px;
-        padding: 15px 25px;
-        margin-bottom: 15px;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
-        font-size: 1.5em;
+        padding: 12px 22px;
+        font-size: 1.3em;
         color: #ff4d6d;
+        box-shadow: 0 4px 16px rgba(255, 77, 109, 0.25);
+        margin-bottom: 14px;
         position: relative;
-        opacity: 0;
-        transform: scale(0.5);
-        transform-origin: bottom center;
+        transform: scale(0);
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition-delay: 0.5s;
+        white-space: nowrap;
     }
-
+    #catContainer.visible .speech-bubble {
+        transform: scale(1);
+    }
     .speech-bubble::after {
         content: '';
         position: absolute;
-        bottom: -15px;
+        bottom: -12px;
         left: 50%;
-        border-width: 15px 15px 0;
-        border-style: solid;
-        border-color: white transparent transparent transparent;
         transform: translateX(-50%);
+        border: 12px solid transparent;
+        border-top-color: white;
+        border-bottom: none;
     }
-
-    /* Pop-up bubble animation */
-    @keyframes popBubble {
-        0%   { opacity: 0; transform: scale(0.5); }
-        70%  { opacity: 1; transform: scale(1.1); } /* Slight pop */
-        100% { opacity: 1; transform: scale(1); }
-    }
-
-    .bubble-active {
-        animation: popBubble 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        animation-delay: 1.2s; /* Waits until cat finishes sliding */
-    }
-
-    .cat-treats {
+    .cat-row {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
+        align-items: flex-end;
+        gap: 14px;
     }
-
+    .cat-row img {
+        width: 120px;
+        height: auto;
+        border-radius: 12px;
+    }
     .treats {
-        font-size: 55px;
-        animation: floatTreats 2s ease-in-out infinite alternate; 
+        font-size: 3em;
+        line-height: 1;
+        animation: bounce 1.5s ease-in-out infinite alternate;
     }
-
-    @keyframes floatTreats {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(-8px); }
+    @keyframes bounce {
+        0%   { transform: translateY(0); }
+        100% { transform: translateY(-10px); }
     }
 </style>
 </head>
@@ -171,11 +154,11 @@
     <button id="noBtn" style="left:50%; top:60%;">Үгүй</button>
 </div>
 
-<div id="treatCatContainer">
-    <div class="speech-bubble">ulsuj bainu eniig iderei</div>
-    <div class="cat-treats">
-        <img src="https://media1.tenor.com/m/mYvNf17XbkwAAAAC/cat-pixel.gif" alt="Pixel Cat" style="width: 130px; height: auto; display: block;">
-        <span class="treats">🎂☕</span>
+<div id="catContainer">
+    <div class="speech-bubble">ulsuj bainu, eniig iderei! 🥺</div>
+    <div class="cat-row">
+        <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" alt="cute cat">
+        <div class="treats">🎂<br>☕</div>
     </div>
 </div>
 
@@ -184,27 +167,22 @@
 </audio>
 
 <script>
-// Setup
 const noBtn = document.getElementById("noBtn");
 const yesBtn = document.getElementById("yesBtn");
 const buttonContainer = document.getElementById("buttonContainer");
 const mainTitle = document.getElementById("mainTitle");
-const treatCatContainer = document.getElementById("treatCatContainer");
-const speechBubble = document.querySelector(".speech-bubble");
+const catContainer = document.getElementById("catContainer");
 
-// RUN AWAY logic for "No" button: Trigger every 333ms (1/3 of a second)
+// No button runs away
 function moveNoButton() {
-    let x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
-    let y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
+    noBtn.style.left = Math.random() * (window.innerWidth  - 100) + "px";
+    noBtn.style.top  = Math.random() * (window.innerHeight - 60)  + "px";
 }
 setInterval(moveNoButton, 333);
 noBtn.addEventListener("mouseover", moveNoButton);
 
-// Yes button logic
+// Yes button
 yesBtn.addEventListener("click", () => {
-    // 1. Hide buttons and change title smoothly
     buttonContainer.style.display = "none";
     mainTitle.style.opacity = 0;
     setTimeout(() => {
@@ -212,63 +190,58 @@ yesBtn.addEventListener("click", () => {
         mainTitle.style.opacity = 1;
     }, 300);
 
-    // 2. Trigger Confetti and Balloons
+    // Balloons
     for (let i = 0; i < 15; i++) {
-        let balloon = document.createElement("div");
-        balloon.className = "balloon";
-        balloon.innerHTML = "🎈";
-        balloon.style.left = Math.random() * window.innerWidth + "px";
-        balloon.style.fontSize = (Math.random() * 30 + 20) + "px";
-        document.body.appendChild(balloon);
-        setTimeout(() => balloon.remove(), 4000);
-    }
-    for (let i = 0; i < 80; i++) {
-        let confetti = document.createElement("div");
-        confetti.className = "confetti";
-        confetti.style.left = Math.random() * window.innerWidth + "px";
-        confetti.style.top = Math.random() * 50 + "px";
-        confetti.style.backgroundColor = `hsl(${Math.random()*360}, 100%, 50%)`;
-        confetti.style.animationDuration = (Math.random()*2 + 2) + "s";
-        document.body.appendChild(confetti);
-        setTimeout(() => confetti.remove(), 3000);
+        let b = document.createElement("div");
+        b.className = "balloon";
+        b.innerHTML = "🎈";
+        b.style.left = Math.random() * window.innerWidth + "px";
+        b.style.fontSize = (Math.random() * 30 + 20) + "px";
+        document.body.appendChild(b);
+        setTimeout(() => b.remove(), 4000);
     }
 
-    // 3. Trigger the high-quality cat slide and speech bubble
-    treatCatContainer.style.display = "flex";
-    
-    // Add animation classes after a microscopic delay to ensure CSS registers the DOM update
+    // Confetti
+    for (let i = 0; i < 80; i++) {
+        let c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = Math.random() * window.innerWidth + "px";
+        c.style.top  = Math.random() * 50 + "px";
+        c.style.backgroundColor = `hsl(${Math.random()*360},100%,50%)`;
+        c.style.animationDuration = (Math.random() * 2 + 2) + "s";
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 3000);
+    }
+
+    // Cat slides up
     requestAnimationFrame(() => {
-        treatCatContainer.classList.add("slide-in-active");
-        speechBubble.classList.add("bubble-active");
+        requestAnimationFrame(() => {
+            catContainer.classList.add("visible");
+        });
     });
 
-    // 4. Send message to Google Script
     sendToGoogleScript("Тийм ээ гэж хариулсан! Болзоонд явахаар боллоо! ❤️🎂☕");
 });
 
-// Floating hearts in the background
+// Floating hearts
 for (let i = 0; i < 30; i++) {
-    let heart = document.createElement("div");
-    heart.className = "heart";
-    heart.innerHTML = "❤";
-    heart.style.left = Math.random() * window.innerWidth + "px";
-    heart.style.fontSize = (Math.random() * 20 + 10) + "px";
-    heart.style.animationDuration = (Math.random() * 5 + 5) + "s";
-    document.body.appendChild(heart);
+    let h = document.createElement("div");
+    h.className = "heart";
+    h.innerHTML = "❤";
+    h.style.left = Math.random() * window.innerWidth + "px";
+    h.style.fontSize = (Math.random() * 20 + 10) + "px";
+    h.style.animationDuration = (Math.random() * 5 + 5) + "s";
+    document.body.appendChild(h);
 }
 
-// Send message via Google Script
 function sendToGoogleScript(message) {
     fetch("https://script.google.com/macros/s/AKfycbz4tY_Ozdx1P6nffURUp-RHYBmJaXb6X2jMDvDj7k6qhZ8qvqqMJkkaP1yzf1F56uq2vA/exec", {
         method: "POST",
         mode: "no-cors",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: message })
     });
 }
 </script>
-
 </body>
 </html>
