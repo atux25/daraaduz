@@ -148,12 +148,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 10px;
+        gap: 15px;
+    }
+
+    /* Ensures the pixel cat stays sharp and blocky instead of blurry */
+    .pixel-cat-img {
+        width: 130px;
+        image-rendering: pixelated; 
+        image-rendering: -moz-crisp-edges;
+        image-rendering: crisp-edges;
     }
 
     .treats {
         font-size: 55px;
-        /* Adds a nice hover floating effect to the food */
         animation: floatTreats 2s ease-in-out infinite alternate; 
     }
 
@@ -175,7 +182,7 @@
 <div id="treatCatContainer">
     <div class="speech-bubble">ulsuj bainu eniig iderei</div>
     <div class="cat-treats">
-        <img src="https://media.tenor.com/kHbZ8I_DY50AAAAi/yippee-cat.gif" alt="Yippee Cat" width="150">
+        <img class="pixel-cat-img" src="https://media.tenor.com/6a1Fv1G44SgAAAAi/pixel-cat.gif" alt="Pixel Cat">
         <span class="treats">🎂☕</span>
     </div>
 </div>
